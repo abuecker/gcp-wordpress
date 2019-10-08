@@ -1,0 +1,28 @@
+- import_tasks: php.yml
+- import_tasks: nginx.yml
+
+- name: Download Wordpress
+  unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    remote_src: true
+    dest: /var/www
+    creates: /var/www/wordpress
+    owner: nginx
+    group: nginx
+
+- name: Copy config
+  template:
+    src: var/www/wordpress/wp-config.php.j2
+    dest: /var/www/wordpress/wp-config.php
+    owner: nginx
+    group: nginx
+
+- name: install selinux libs
+  yum:
+    pkg: libsemanage-python
+
+- name: Set httpd_can_network_connect flag on and keep it persistent across reboots
+  seboolean:
+    name: httpd_can_network_connect
+    state: yes
+    persistent: yes

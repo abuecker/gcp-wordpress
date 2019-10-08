@@ -1,0 +1,37 @@
+- name: Download the Cloud SQL CLient Proxy
+  get_url:
+    url: https://dl.google.com/cloudsql/cloud_sql_proxy.linux.amd64
+    dest: /usr/bin/cloud_sql_proxy
+    mode: ugo+rx,ug+w
+
+- name: create config directory
+  file:
+    path: /etc/wp
+    state: directory
+    mode: u=rwx
+
+- name: Save Cloud SQL Proxy Client Creds
+  when: '"packer" not in group_names'
+  copy:
+    content: '{{ PROXY_KEY }}'
+    dest: /etc/wp/creds-cloud-sql.json
+    mode: u=rw
+
+- name: Save Cloud SQL Proxy Client Creds
+  when: '"packer" not in group_names'
+  copy:
+    content: 'DB_INSTANCE={{ DB_INSTANCE }}'
+    dest: /etc/wp/cloud_sql_env
+    mode: u=rw
+
+- name: Copy the Cloud SQL Proxy Systemd Service
+  template:
+    src: etc/systemd/system/cloud_sql_proxy.service.j2
+    dest: /etc/systemd/system/cloud_sql_proxy.service
+
+- name: Enable the Cloud SQL Proxy
+  systemd:
+    name: cloud_sql_proxy
+    daemon_reload: yes
+    enabled: yes
+    state: started

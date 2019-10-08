@@ -1,0 +1,19 @@
+[Unit]
+Description=Cloud SQL Proxy
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/wp/creds-cloud-sql.json
+ConditionPathExists=/etc/wp/cloud_sql_env
+
+[Service]
+EnvironmentFile=/etc/wp/cloud_sql_env
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cloud_sql_proxy
+Type=simple
+
+ExecStart=/usr/bin/cloud_sql_proxy -instances=${PROXY_CONNECTION}=tcp:3306 -credential_file=/etc/wp/creds-cloud-sql.json
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

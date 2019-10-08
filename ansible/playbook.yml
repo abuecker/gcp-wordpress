@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - common
+
+- hosts: bastion
+  become: true
+  roles:
+    - nat
+
+- hosts: wordpress
+  become: true
+  roles:
+    - cloud_sql_proxy
+    - wordpress
+
+- hosts: load_balancer
+  become: true
+  roles:
+    - nat
+    - load_balancer

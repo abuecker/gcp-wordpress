@@ -1,0 +1,9 @@
+.direnv
+.ansible-password
+.envrc.private
+.vagrant
+*.retry
+*.tfplan
+whitelist.auto.tfvars
+terraform/.terraform
+.wp-password

@@ -1,0 +1,20 @@
+- name: EPEL
+  yum:
+    pkg: epel-release
+
+- name: Install Extra Packages
+  yum:
+    pkg:
+      - vim
+      - ntp
+      - net-tools
+      - tree
+      - jq
+      - telnet
+    state: present
+
+- name: Enable NTP
+  systemd:
+    name: ntpd
+    enabled: yes
+    state: started

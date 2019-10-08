@@ -1,0 +1,59 @@
+{
+  "variables": {
+    "ANSIBLE_VAULT_PASSWORD_FILE": "{{env `ANSIBLE_VAULT_PASSWORD_FILE`}}",
+    "CI": "{{env `CI`}}",
+    "CLOUDSDK_CORE_PROJECT": "{{env `CLOUDSDK_CORE_PROJECT`}}",
+    "USER": "{{env `USER`}}"
+  },
+  "builders": [
+    {
+      "disk_size": "25",
+      "image_description": "Wordpress Centos 7",
+      "image_family": "wp",
+      "image_name": "wordpress-{{ timestamp }}",
+      "instance_name": "pkr-wp-{{timestamp}}",
+      "machine_type": "g1-small",
+      "network": "wp",
+      "on_host_maintenance": "TERMINATE",
+      "preemptible": true,
+      "project_id": "{{user `CLOUDSDK_CORE_PROJECT`}}",
+      "source_image": "centos-7-v20190916",
+      "ssh_username": "centos",
+      "state_timeout": "10m",
+      "subnetwork": "wp",
+      "type": "googlecompute",
+      "region": "us-west2",
+      "zone": "us-west2-b",
+      "labels": {
+        "ci": "{{ user `CI` }}",
+        "timestamp": "{{timestamp}}"
+      },
+      "tags": ["packer"],
+      "scopes": [
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/compute",
+        "https://www.googleapis.com/auth/devstorage.full_control"
+      ]
+    }
+  ],
+  "post-processors": [],
+  "provisioners": [
+    {
+      "type": "ansible",
+      "ansible_env_vars": ["ANSIBLE_TIMEOUT=3000"],
+      "playbook_file": "ansible/playbook.yml",
+      "sftp_command": "/usr/libexec/openssh/sftp-server -e",
+      "groups": ["wordpress"],
+      "extra_arguments": [
+        "--vault-password-file",
+        "{{ user `ANSIBLE_VAULT_PASSWORD_FILE` }}",
+        "--extra-vars",
+        "ansible_remote_tmp=/tmp/{{ user `USER` }}/ansible",
+        "--extra-vars",
+        "ssh_args=-o ControlMaster=no -o ControlPersist=60s",
+        "--ssh-extra-args",
+        "-o IdentitiesOnly=yes"
+      ]
+    }
+  ]
+}
